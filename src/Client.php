@@ -58,6 +58,7 @@ class Client
         
         $this->client = new GuzzleClient([
             'base_uri' => self::BASE_URI,
+            'http_errors' => false,
         ]);
         
     }
@@ -94,9 +95,12 @@ class Client
         
         $this->getEndpoint($endpoint);
         
-        $result = $this->client->request($method, $this->getEndpoint($endpoint), $options);
-        
-        $contents = $result->getBody()->getContents();
+        try {
+            $result = $this->client->request($method, $this->getEndpoint($endpoint), $options);
+            $contents = $result->getBody()->getContents();
+        } catch (Guzzle\Http\Exception\BadResponseException $e) {
+            $contents = $e->getMessage();
+        }
         
         return json_decode($contents, true);
     }
