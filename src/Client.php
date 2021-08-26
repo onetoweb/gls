@@ -66,7 +66,7 @@ class Client
     /**
      * Send request
      *
-     * @param string $method = 'POST'
+     * @param string $method
      * @param string $endpoint
      * @param array $data = null (optional)
      *
@@ -74,7 +74,7 @@ class Client
      *
      * @return array
      */
-    private function request(string $method = 'POST', string $endpoint, array $data = [])
+    private function request(string $method, string $endpoint, array $data = [])
     {
         $options = [
             RequestOptions::HEADERS => [
