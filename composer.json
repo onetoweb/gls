@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "guzzlehttp/guzzle": "^6.5"
+        "guzzlehttp/guzzle" : "^6.0 || ^7.0"
     },
     "require-dev": {
         "symfony/debug": "^4.4",
