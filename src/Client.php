@@ -4,8 +4,9 @@ namespace Onetoweb\Gls;
 
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\RequestOptions;
-use Onetoweb\Gls\Exception\FileException;
-use Onetoweb\Gls\Exception\InputException;
+use Onetoweb\Gls\Exception\{FileException, InputException};
+use Onetoweb\Gls\Config\Method;
+
 
 /**
  * Gls Api Client
@@ -15,33 +16,13 @@ use Onetoweb\Gls\Exception\InputException;
  */
 class Client
 {
-    const BASE_URI = 'https://api.gls.nl';
-    const API_VERSION = '1.0';
-    
-    /**
-     * @var string
-     */
-    private $username;
-    
-    /**
-     * @var string
-     */
-    private $password;
-    
-    /**
-     * @var string
-     */
-    private $apiKey;
-    
-    /**
-     * @var bool
-     */
-    private $testModus;
+    public const BASE_URI = 'https://api.gls.nl';
+    public const API_VERSION = '1.0';
     
     /**
      * @var GuzzleClient
      */
-    private $client;
+    private ?GuzzleClient $client = null;
     
     /**
      * @param string $username
@@ -49,24 +30,29 @@ class Client
      * @param string $apiKey
      * @param bool $testModus = false
      */
-    public function __construct(string $username, string $password, string $apiKey, bool $testModus = false)
-    {
-        $this->username = $username;
-        $this->password = $password;
-        $this->apiKey = $apiKey;
-        $this->testModus = $testModus;
+    public function __construct(
         
+        #[\SensitiveParameter]
+        private string $username,
+        
+        #[\SensitiveParameter]
+        private string $password,
+        
+        #[\SensitiveParameter]
+        private string $apiKey,
+        
+        private bool $testModus = false
+    ) {
         $this->client = new GuzzleClient([
             'base_uri' => self::BASE_URI,
             'http_errors' => false,
         ]);
-        
     }
     
     /**
      * Send request
      *
-     * @param string $method
+     * @param Method $method
      * @param string $endpoint
      * @param array $data = null (optional)
      *
@@ -74,7 +60,7 @@ class Client
      *
      * @return array
      */
-    private function request(string $method, string $endpoint, array $data = [])
+    private function request(Method $method, string $endpoint, array $data = [])
     {
         $options = [
             RequestOptions::HEADERS => [
@@ -85,7 +71,7 @@ class Client
             ],
         ];
         
-        if ($method == 'POST') {
+        if ($method == Method::POST) {
             
             $data['username'] = $this->username;
             $data['password'] = $this->password;
@@ -96,7 +82,7 @@ class Client
         $this->getEndpoint($endpoint);
         
         try {
-            $result = $this->client->request($method, $this->getEndpoint($endpoint), $options);
+            $result = $this->client->request($method->value, $this->getEndpoint($endpoint), $options);
             $contents = $result->getBody()->getContents();
         } catch (Guzzle\Http\Exception\BadResponseException $e) {
             $contents = $e->getMessage();
@@ -129,7 +115,7 @@ class Client
      */
     public function post(string $endpoint, array $data = [])
     {
-        return $this->request('POST', $endpoint, $data);
+        return $this->request(Method::POST, $endpoint, $data);
     }
     
     /**
@@ -141,7 +127,7 @@ class Client
      */
     public function head(string $endpoint)
     {
-        return $this->request('HEAD', $endpoint);
+        return $this->request(Method::HEAD, $endpoint);
     }
     
     /**
